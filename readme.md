@@ -1,4 +1,4 @@
-# Kyle Hotchkiss' `projects-folder`
+# Kyle Hotchkiss' `~/projects` folder
 
 A collection of small tools I've built in javascript for day-to-day needs, organized by date. I've worked with JS for about a decade so using it for scripting jobs comes naturally.
 
