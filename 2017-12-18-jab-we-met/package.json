@@ -1,0 +1,17 @@
+{
+  "name": "jab-we-met",
+  "version": "1.0.0",
+  "description": "Tool to figure out when heer and I met",
+  "main": "index.js",
+  "repository": "https://kylehotchkiss@github.com/kylehotchkiss/jab-we-met.git",
+  "author": "Kyle Hotchkiss <kyle@kylehotchkiss.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "async": "^2.6.0",
+    "axios": "^0.17.1",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "querystring": "^0.2.0"
+  }
+}

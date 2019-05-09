@@ -1,0 +1,34 @@
+{
+	"profanity": {
+        "reason": "Do you want your future boss to see you talking like this?",
+        "list": ["fuck", "shit", "ass", "bitch", "douche", "faggot", "cunt"]
+    },
+	"negativity": {
+        "reason": "Venting on Twitter is fun, but let's remove old posts like that to give your past a more silver lining",
+        "list": ["hate", "hell", "badday", "pissed", "ruin", "ruined", "fml", "alone", "lonely", "disgusting", "ugh", "gag"]
+    },
+	"modesty": {
+        "reason": "Our professional images are increasingly based on things we say online on personal accounts - if you had accounts in school and talked about your crushes, this will scrub some of those.",
+        "list": ["cute", "sexy", "die", "dies", "dead", "death", "crap", "vomit", "poop", "pee", "fart", "drunk", "sex", "hangover", "hungover", "butt", "penis", "vagina", "cunt", "pussy", "jizz", "bra", "underwear"]
+    },
+	"political": { 
+        "reason": "Sadly, some people make their opinions before they meet you if you speak about politics often. Scrubbing old posts can reduce the liklihood of this.",
+        "list": ["clinton", "bush", "obama", "trump", "republican", "democrat", "white house", "congress", "senate", "liberals", "conservatives", "russia", "russian"]
+    },
+	"insulting": {
+        "reason": "Removes some common insults, but if you really insult people reguarlly this tool can't help you. Seek a counselor and work on yourself, it's worth it, friend.",
+        "list": ["dork", "ugly", "kill", "killing", "dumb", "moron", "stupid", "fat", "lazy", "racist", "creepy"]
+    },
+	"violent": {
+        "reason": "Violent events are very complex part of our world. A 140-280 character hot take shouldn't live on forever",
+        "list": ["shooting"]
+    },
+	"privacy": {
+        "reason": "Social engineering attackers can get a ton of information from Twitter. Important dates should never be tweeted, nor the important dates of things for your family.",
+        "list": ["pregnant", "birthday", "anniversary", "divorce", "wedding", "honeymoon", "born", "birth", "engaged", "engagement", "my house", "my home", "my school", "diagnosed"]
+    },    
+	"personal": {
+        "reason": "Protect the privacy of your family",
+        "list": ["dad", "mom", "madre", "padre", "brother", "sister", "boss", "coworker", "neighbor"]
+    }
+}

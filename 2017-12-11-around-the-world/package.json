@@ -1,0 +1,19 @@
+{
+  "name": "around-the-world",
+  "version": "1.0.0",
+  "description": "Generate GeoJSON maps of your travels around the world.",
+  "main": "index.js",
+  "dependencies": {
+    "arc": "^0.1.0",
+    "dotenv": "^4.0.0",
+    "polyline": "^0.2.0",
+    "request": "^2.79.0",
+    "slug": "^0.9.1",
+    "turf": "^3.0.14"
+  },
+  "scripts": {
+    "start": "index.js"
+  },
+  "author": "Kyle Hotchkiss",
+  "license": "GPL"
+}

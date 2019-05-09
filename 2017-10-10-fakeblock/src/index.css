@@ -1,0 +1,20 @@
+.page-upload {
+    margin-top: 5em;
+}
+
+.tweet-set-container {
+    position: relative;
+    height: 500px;
+}
+
+.tweet-set {
+    position: absolute;
+    background-color: #FFFFFF;
+    height: 500px;
+    width: 100%;
+}
+
+.tweet-set p { 
+    word-wrap: break-word;
+}
+

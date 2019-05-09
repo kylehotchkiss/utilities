@@ -1,0 +1,10 @@
+.env
+.DS_Store
+
+cache/
+input/
+build/
+output/
+node_modules/
+
+package-lock.json
