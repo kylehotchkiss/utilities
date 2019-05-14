@@ -8,10 +8,10 @@ const moment = require('moment');
 const RECEIPT_DATE = moment.unix( process.env.RECEIPT_DATE );
 const DATE_FORMAT = `MMMM D, YYYY`;
 
-const getUSCISStatus = async () => {
+const getUSCISStatus = async ( receiptNumber ) => {
     try {
         const { data: caseStatusData } = await axios.post('https://egov.uscis.gov/casestatus/mycasestatus.do', qs.stringify({
-            appReceiptNum: process.env.RECEIPT_NUMBER,
+            appReceiptNum: receiptNumber,
             initCaseSearch: 'CHECK+STATUS'
         }));
     
@@ -21,11 +21,12 @@ const getUSCISStatus = async () => {
         return response;
     } catch( error ) {
         console.error( error );
-        throw new Error( error );
+
+        return null;
     }
 }
 
-const getUSCISEstimates = async () => {
+const getUSCISEstimates = async ( serviceCenter ) => {
     try {
         let spouse = {};
 
@@ -37,7 +38,7 @@ const getUSCISEstimates = async () => {
                     } 
                 } 
             }  
-        } = await axios(`https://egov.uscis.gov/processing-times/api/processingtime/I-130/${ process.env.SERVICE_CENTER }`);
+        } = await axios(`https://egov.uscis.gov/processing-times/api/processingtime/I-130/${ serviceCenter }`);
     
     
         for ( const type of processingTimeData ) {
@@ -48,53 +49,119 @@ const getUSCISEstimates = async () => {
             }
         }
     
-        const earliestDuration = spouse.range[1].value;
-        const latestDuration = spouse.range[0].value;
-    
-        const earliest = moment( RECEIPT_DATE )
-            .add(Math.floor(earliestDuration), 'months')
-            .add( ( (earliestDuration % 1) * 30 ), 'days' );
-        const latest = moment( RECEIPT_DATE )
-            .add(Math.floor(latestDuration), 'months')
-            .add( ( (latestDuration % 1) * 30 ), 'days' );
-    
-        console.log( 'USCIS Estimate data as of', spouse.publication_date );
-        console.log( 'USCIS Received', RECEIPT_DATE.format(DATE_FORMAT) );
-        console.log( 'USCIS Earliest Approval', earliest.format(DATE_FORMAT) );
-        console.log( 'USCIS Latest Approval', latest.format(DATE_FORMAT) );
+        const minMonths = spouse.range[1].value;
+        const maxMonths = spouse.range[0].value;
+        const minDays = moment.duration(minMonths, 'months').asDays();
+        const maxDays = moment.duration(maxMonths, 'months').asDays();
 
-        return true;
+        return {
+            min: minDays,
+            max: maxDays   
+        }
     } catch( error ) {
         console.error( error );
-        throw new Error( error );
+
+        return {};
     }  
 }
 
-const getAM22Status = async () => {
+const getAM22Estimates = async () => {
     try {
         const { data: processingTimeHTML } = await axios('https://www.am22tech.com/uscis/current-i130-processing-time-green-card-for-parents/');
 
         const $ = cheerio.load( processingTimeHTML );
-        // LOL
-        const response = $('#texas tbody tr').eq(1).find('td').eq(1).html().split('<br>')[0];
-        const processedDate = moment(response, 'DD MMM, YY');
-        const remainingTime = RECEIPT_DATE.diff(processedDate, 'days');
-        const bestEstimatedDate = moment( RECEIPT_DATE ).add(remainingTime, 'days');
 
-        console.log( 'AM22Tech Speculative Approval', bestEstimatedDate.format(DATE_FORMAT) );
+        const minResponse = $('#texas tbody tr').eq(1).find('td').eq(1).html().split('<br>')[0];
+        const maxResponse = $('#texas tbody tr').eq(1).find('td').eq(2).html().split('<br>')[0];
+        const minDate = moment(minResponse, 'DD MMM, YY');
+        const maxDate = moment(maxResponse, 'DD MMM, YY');
+        const minDays = moment().diff(minDate, 'days');
+        const maxDays = moment().diff(maxDate, 'days');
+
+        return {
+            min: minDays,
+            max: maxDays
+        }
     } catch ( error ) {
         console.error( error );
-        throw new Error( error );
+
+        return {};
     }
 }
 
-const main = (async () => {
+const getVisaJourneyEstimates = async () => {
     try {
-        //const status = await getUSCISStatus();        
-        //console.log( status );
-        const estimates = await getUSCISEstimates();
-        const am22estimate = await getAM22Status()
-    } catch( error ) {
-        console.error('Error encountered, closing');
+        const { data: processingTimeHTML } = await axios('https://www.visajourney.com/timeline/irstats.php?history=90');
+
+        const $ = cheerio.load( processingTimeHTML );
+        const days = $('#ipsLayout_mainArea table').eq(1).find('tr').eq(4).find('td').eq(2).text().trim();
+
+        return {
+            min: Number(days),
+            max: Number(days)
+        }
+    } catch ( error ) {
+        console.error( error );
+
+        return {};
     }
-})();
+}
+
+const getI130Status = async() => {
+    try {
+        const status = await getUSCISStatus();        
+
+        return status;
+    } catch ( error ) {
+        console.error( error );
+    }
+}
+
+const getI130Estimates = async ( serviceCenter ) => {
+    try {
+        const USCISEstimates = await getUSCISEstimates( serviceCenter );
+        const am22Estimates = await getAM22Estimates();
+        const visaJourneyEstimates = await getVisaJourneyEstimates();
+
+        /*const table = [{
+            'Data Source': 'USCIS',
+            'Earliest Approval Date': moment(RECEIPT_DATE).add(USCISEstimates.min, 'days').format( DATE_FORMAT ),
+            'Latest Approval Date': moment(RECEIPT_DATE).add(USCISEstimates.max, 'days').format( DATE_FORMAT ),
+        }, {
+            'Data Source': 'AM 22 Tech',
+            'Earliest Approval Date': moment(RECEIPT_DATE).add(am22Estimates.min, 'days').format( DATE_FORMAT ),
+            'Latest Approval Date': moment(RECEIPT_DATE).add(am22Estimates.max, 'days').format( DATE_FORMAT ),
+        }, {
+            'Data Source': 'Visa Journey',
+            'Earliest Approval Date': moment(RECEIPT_DATE).add(visaJourneyEstimates.min, 'days').format( DATE_FORMAT ),
+            'Latest Approval Date': moment(RECEIPT_DATE).add(visaJourneyEstimates.max, 'days').format( DATE_FORMAT ),
+        }];  
+
+        console.table( table );*/
+
+        return {
+            am22Estimates,
+            USCISEstimates,
+            visaJourneyEstimates
+        };
+    } catch( error ) {
+        console.error('Error encountered');
+
+        return {}
+    }
+};
+
+if ( process.env.LIBRARY_MODE === 'false' ) {
+    const main = (async () => {
+        const status = await getI130Status( process.env.RECEIPT_NUMBER );
+        const estimates = await getI130Estimates( process.env.SERVICE_CENTER );
+
+        console.log( status );
+        console.log( estimates );
+    })();    
+} else {
+    module.exports = {
+        getI130Status,
+        getI130Estimates
+    };
+}

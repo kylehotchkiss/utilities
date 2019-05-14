@@ -6,5 +6,6 @@ input/
 build/
 output/
 node_modules/
+private-*/
 
 package-lock.json
