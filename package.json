@@ -1,0 +1,18 @@
+{
+  
+  "name": "projects-folder",
+  "author": "Kyle Hotchkiss",
+  "description": "Kyle Hotchkiss' ~/Projects folder",
+
+  "license": "ISC",
+  "version": "1.0.0",
+  
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "sh npm-postinstall.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kylehotchkiss/projects-folder.git"
+  }
+}
