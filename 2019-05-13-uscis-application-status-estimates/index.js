@@ -72,6 +72,10 @@ const getServiceCenterIDs = ( receiptPrefix ) => {
     }
 }
 
+/**
+ * Get the written status of a I-130 receipt number. Helpful for checking RFE on a daily basis.
+ * @param {string} receiptNumber 
+ */
 const getUSCISStatus = async ( receiptNumber ) => {
     try {
         const { data: caseStatusData } = await axios.post('https://egov.uscis.gov/casestatus/mycasestatus.do', qs.stringify({
@@ -90,6 +94,10 @@ const getUSCISStatus = async ( receiptNumber ) => {
     }
 }
 
+/**
+ * Get the official estimated time range, in days, from USCIS. USCIS updates these monthly.
+ * @param {string} serviceCenter 
+ */
 const getUSCISI130Estimates = async ( serviceCenter ) => {
     try {
         let spouse = {};
@@ -124,14 +132,35 @@ const getUSCISI130Estimates = async ( serviceCenter ) => {
     }  
 }
 
-const getAM22I130Estimates = async () => {
+/**
+ * Get an estimated processing time from AM 22 Tech. Not the most credible data source but appears
+ * to be updated on a daily basis with the very fastest processed cases.
+ * @param {string} serviceCenter 
+ */
+const getAM22I130Estimates = async ( serviceCenter ) => {
     try {
+        let minResponse, maxResponse;
         const { data: processingTimeHTML } = await axios('https://www.am22tech.com/uscis/current-i130-processing-time-green-card-for-parents/');
 
         const $ = cheerio.load( processingTimeHTML );
 
-        const minResponse = $('#texas tbody tr').eq(1).find('td').eq(1).html().split('<br>')[0];
-        const maxResponse = $('#texas tbody tr').eq(1).find('td').eq(2).html().split('<br>')[0];
+        const tableID = serviceCenter.toLowerCase();
+        const $estimateRows = $(`#${ tableID } tbody tr`);
+
+        $estimateRows.each(( i, element ) => {
+            const $el = $(element);
+            const name = $el.find('td').eq(0).text().toLowerCase();
+            const min = $el.find('td').eq(1).html().split('<br>')[0];
+            const max = $el.find('td').eq(2).html().split('<br>')[0];
+
+            if ( ~name.indexOf('u.s. citizen') && ~name.indexOf('spouse') ) {
+                minResponse = min;
+                maxResponse = max;
+
+                return false;
+            }
+        });
+
         const minDate = moment(minResponse, 'DD MMM, YY');
         const maxDate = moment(maxResponse, 'DD MMM, YY');
         const minDays = moment().diff(minDate, 'days');
@@ -149,6 +178,10 @@ const getAM22I130Estimates = async () => {
     }
 }
 
+/**
+ * Get estimated I-130 processing times via VisaJourney. They seem to have a solid dataset albeit very fraudy users.
+ * @param {string} serviceCenter 
+ */
 const getVisaJourneyI130Estimates = async ( serviceCenter ) => {
     try {
         const { data: processingTimeHTML } = await axios('https://www.visajourney.com/timeline/irstats.php?history=90');
@@ -187,23 +220,32 @@ const getVisaJourneyI130Estimates = async ( serviceCenter ) => {
     }
 }
 
-const getI130Status = async ( receiptNumber ) => {
+/**
+ * Get the estimated NOA2-Interview time range from VisaJourney
+ * @param {string} consulate 
+ */
+const getVisaJourneyNVCConsulateEstimates = async ( consulate ) => {
     try {
-        const status = await getUSCISStatus( receiptNumber );        
+        let consulateDays = 0;
 
-        return status;
-    } catch ( error ) {
-        console.error( error );
-    }
-}
-
-const getVisaJourneyNVCConsulateEstimates = async () => {
-    try {
         const { data: processingTimeHTML } = await axios('https://www.visajourney.com/timeline/irstats.php?history=90');
 
         const $ = cheerio.load( processingTimeHTML );
         const avgDays = $('#ipsLayout_mainArea table').eq(0).find('tr').eq(1).find('td').eq(4).text().trim();
-        const consulateDays = $('#ipsLayout_mainArea table').eq(3).find('tr').eq(44).find('td').eq(4).text().trim();
+
+        const $estimateRows = $('#ipsLayout_mainArea table').eq(3).find('tr');
+
+        $estimateRows.each(( i, element ) => {
+            const $el = $(element);
+            const name = $el.find('td').eq(0).text().toLowerCase().trim();
+            const estimate = $el.find('td').eq(4).text().trim();
+
+            if ( ~name.indexOf( consulate.toLowerCase() ) ) {
+                consulateDays = estimate;
+
+                return false;
+            }
+        });
 
         return {
             min: Number( consulateDays < avgDays ? consulateDays : avgDays ),
@@ -217,11 +259,29 @@ const getVisaJourneyNVCConsulateEstimates = async () => {
     }
 }
 
+/**
+ * Parent task to get the I-130 status update
+ * @param {string} receiptNumber 
+ */
+const getI130Status = async ( receiptNumber ) => {
+    try {
+        const status = await getUSCISStatus( receiptNumber );        
+
+        return status;
+    } catch ( error ) {
+        console.error( error );
+    }
+}
+
+/**
+ * Parent task to get I-130 time estimates
+ * @param {object} serviceCenterIds 
+ */
 const getI130Estimates = async ({ state, code }) => {
     try {
-        const USCISEstimates = getUSCISI130Estimates( code );
-        const am22Estimates = getAM22I130Estimates( state );
-        const visaJourneyEstimates = getVisaJourneyI130Estimates( state );
+        const USCISEstimates = getUSCISI130Estimates( code ); // Dynamic
+        const am22Estimates = getAM22I130Estimates( state ); // Dynamic
+        const visaJourneyEstimates = getVisaJourneyI130Estimates( state ); // Dynamic
 
         const results = {
             'USCIS': await USCISEstimates,
@@ -237,10 +297,13 @@ const getI130Estimates = async ({ state, code }) => {
     }
 };
 
-
+/**
+ * Parent task to get post I-130 approval time estimates
+ * @param {string} consulate 
+ */
 const getPostI130Estimates = async ( consulate ) => {
     try {
-        const visajourney = await getVisaJourneyNVCConsulateEstimates();
+        const visajourney = await getVisaJourneyNVCConsulateEstimates( consulate ); // Dynamic
 
         return {
             ...POST_I130_ESTIMATES,
