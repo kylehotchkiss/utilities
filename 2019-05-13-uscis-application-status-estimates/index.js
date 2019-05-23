@@ -6,18 +6,71 @@ const cheerio = require('cheerio');
 const moment = require('moment');
 
 const POST_I130_ESTIMATES = {
-    rapidvisa: {        
+    'Rapid Visa': {        
         min: 51,
         max: 132,
         captured_at: 1557858600,
     },
-    boundless: {        
+    'Boundless': {        
         min: 120,
         max: 210,
         captured_at: 1557858600,
     }
 };
 
+/**
+ * Convert receipt prefix to service center naming conventions
+ * References: 
+ *     https://www.am22tech.com/uscis-receipt-number/
+ *     Network inspector on https://egov.uscis.gov/processing-times/
+ */
+const getServiceCenterIDs = ( receiptPrefix ) => {
+    if ( receiptPrefix.length > 3 ) {
+        throw new Error('getServiceCenterIDs() requires a valid 3-character receipt prefix');
+    }
+
+    const receiptPrefixLowercased = receiptPrefix.toLowerCase();
+
+    switch ( receiptPrefixLowercased ) {
+        case 'csc':
+        case 'wac':
+            return {
+                code: 'CSC',
+                state: 'California'                
+            }
+        
+        case 'vsc':
+        case 'eac':
+            return {
+                code: 'ESC',
+                state: 'Vermont'
+            }
+
+        case 'lin':
+        case 'nsc':
+            return {
+                code: 'NSC',
+                state: 'Nebraska'
+            }
+
+
+        case 'tsc':
+        case 'src':
+            return {
+                code: 'SSC',
+                state: 'Texas'                
+            };
+
+        case 'ysc':
+            return {
+                code: 'YSC',
+                state: 'Potomac'
+            }
+
+        default: 
+            throw new Error(`${ receiptPrefix } is not a valid receipt prefix. This tool can only estimate I-130s with California, Vermont, Nebraska, Texas, or Potomac service centers.`);
+    }
+}
 
 const getUSCISStatus = async ( receiptNumber ) => {
     try {
@@ -96,18 +149,37 @@ const getAM22I130Estimates = async () => {
     }
 }
 
-const getVisaJourneyI130Estimates = async () => {
+const getVisaJourneyI130Estimates = async ( serviceCenter ) => {
     try {
         const { data: processingTimeHTML } = await axios('https://www.visajourney.com/timeline/irstats.php?history=90');
 
+        let days;
         const $ = cheerio.load( processingTimeHTML );
-        const days = $('#ipsLayout_mainArea table').eq(1).find('tr').eq(4).find('td').eq(2).text().trim();
+        const $estimateRows = $('#ipsLayout_mainArea table').eq(1).find('tr');
+        
+        $estimateRows.each(( i, element ) => {
+            const $el = $(element);
+            const name = $el.find('td').eq(0).text().toLowerCase();
+            const estimate = $el.find('td').eq(4).text();
 
-        return {
-            min: Number(days),
-            max: Number(days),
-            captured_at: moment().unix()
-        }
+            if ( ~name.indexOf(serviceCenter.toLowerCase()) ) {
+                days = estimate;
+
+                return false;
+            }
+        });
+
+        if ( days ) {
+            return {
+                min: Number(days),
+                max: Number(days),
+                captured_at: moment().unix()
+            }
+        } else {
+            console.error('No results found, did you choose a valid service center?');
+
+            return {};
+        }        
     } catch ( error ) {
         console.error( error );
 
@@ -145,16 +217,16 @@ const getVisaJourneyNVCConsulateEstimates = async () => {
     }
 }
 
-const getI130Estimates = async ( serviceCenter ) => {
+const getI130Estimates = async ({ state, code }) => {
     try {
-        const USCISEstimates = getUSCISI130Estimates( serviceCenter );
-        const am22Estimates = getAM22I130Estimates();
-        const visaJourneyEstimates = getVisaJourneyI130Estimates();
+        const USCISEstimates = getUSCISI130Estimates( code );
+        const am22Estimates = getAM22I130Estimates( state );
+        const visaJourneyEstimates = getVisaJourneyI130Estimates( state );
 
         const results = {
-            uscis: await USCISEstimates,
-            am22tech: await am22Estimates,
-            visajourney:await visaJourneyEstimates
+            'USCIS': await USCISEstimates,
+            'AM 22 Tech': await am22Estimates,
+            'Visa Journey':await visaJourneyEstimates
         };
 
         return results;
@@ -172,7 +244,7 @@ const getPostI130Estimates = async ( consulate ) => {
 
         return {
             ...POST_I130_ESTIMATES,
-            visajourney
+            'Visa Journey': visajourney
         }
     } catch ( error ) {
         console.error( error );
@@ -183,14 +255,17 @@ const getPostI130Estimates = async ( consulate ) => {
 
 if ( process.env.LIBRARY_MODE === 'false' ) {
     const main = (async () => {
-        const statusTask = getI130Status( process.env.RECEIPT_NUMBER );
-        const preEstimatesJob = getI130Estimates( process.env.SERVICE_CENTER );
-        const postEstimatesJob = getPostI130Estimates( process.env.INTERVIEW_CONSULATE );
+        const receiptNumber = process.env.RECEIPT_NUMBER;
+        const interviewConsulate = process.env.INTERVIEW_CONSULATE;
+
+        const serviceCenterIDs = getServiceCenterIDs( receiptNumber.substring(0, 3) );
+        const statusTask = getI130Status( receiptNumber );
+        const preEstimatesJob = getI130Estimates( serviceCenterIDs );
+        const postEstimatesJob = getPostI130Estimates( interviewConsulate );
 
         const status = await statusTask;
         const preEstimates = await preEstimatesJob;
         const postEstimates = await postEstimatesJob;
-
 
         console.log( 'Status', status );
         console.log( 'I-130 Processing Time', preEstimates );
@@ -200,6 +275,7 @@ if ( process.env.LIBRARY_MODE === 'false' ) {
     module.exports = {
         getI130Status,
         getI130Estimates,
+        getServiceCenterIDs,
         getPostI130Estimates
     };
 }
