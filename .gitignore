@@ -1,11 +1,19 @@
-.env
+# System Related
+.vscode/
 .DS_Store
 
+# Site Projects 
+dev/
+dist/
+
+# Node.js Projects
+.env
 cache/
 input/
 build/
 output/
 node_modules/
-private-*/
-
 package-lock.json
+
+# Projects to keep out of Github
+private-*/
