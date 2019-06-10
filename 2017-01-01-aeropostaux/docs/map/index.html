@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.29.0/mapbox-gl.css' rel='stylesheet' />
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+
+        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.29.0/mapbox-gl.js'></script>
+
+        <style>.map-container { width: 1140px; height: 641px; }</style>
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2>Aeropostaux</h2>
+
+                    <p>
+                        A map of the global airmail network based on UPU publication 
+                        (<a href="http://www.upu.int/uploads/tx_sbdownloader/listeGeneraleDesServicesAeropostauxCn68Fr_01.pdf">original dataset: 1,300 page PDF</a>). 
+                        Map describes connections and not routes. Mail does not fly directly. It likely flies on national carriers (american/united for US). 
+                        It's all a mystery beyond that. The entire system is pretty ad-hoc.
+                    </p><p>
+                        Disclaimer: there are bugs with the UX and the data I'm trying to knock out. For example, syria and yemen have not sent or received airmail in years.
+                    </p>
+
+                    <div id="js-places" class="form-group"></div>
+                    <div id="js-map" class="map-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
+        <script src="../lib/turf.js"></script>
+        <script src="../lib/arc.js"></script>
+        <script src="index.js"></script>
+    </body>
+</html>
