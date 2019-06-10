@@ -1,0 +1,321 @@
+@import "symbolset";
+@import "modules/responsive";
+
+
+$color-red: #C62626;
+$color-sand: #EDECE5;
+$color-blue: #2058a6;
+$color-white: #FFFFFF;
+$color-black: #444444;
+$color-twitter: #55ACEE;
+$color-facebook: #3B5998;
+
+$font-serif: "kepler-std", serif;
+$font-headlines: "futura-pt", sans-serif;
+$font-sans: "freight-sans-pro", sans-serif;
+
+
+body {
+    color: $color-black;
+    font-family: $font-sans;
+    font-size: 14px;
+
+    @include sm-and-up {
+        font-size: 18px;
+    }
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: $font-headlines;
+    text-transform: uppercase;
+    margin: 0 0 1em 0;
+}
+
+
+h2 {
+    @include xs {
+        text-align: center;
+    }
+}
+
+
+a {
+    color: $color-red;
+    text-decoration: none;
+
+    &:hover, &:active, &:focus {
+        color: lighten($color-red, 25%);
+        text-decoration: none;
+    }
+}
+
+
+p {
+    line-height: 1.6em;
+    margin: 0 0 1.6em 0;
+
+    &.small {
+        font-size: 14px;
+    }
+}
+
+
+img {
+    max-width: 100%;
+
+    &.feature-image {
+        @include xs {
+            margin-bottom: 30px;
+        }
+    }
+
+    &.circle {
+        border-radius: 50%;
+    }
+}
+
+
+.vertical {
+    @include sm-and-up {
+        top: 50%;
+        position: relative;
+        transform: translateY( -50% );
+    }
+}
+
+
+section.splash-hero {
+    $height-mobile: 360px;
+    $height: 460px;
+
+    background-image: url("../images/hero.jpg");
+    background-size: cover;
+    background-position: center center;
+    height: $height-mobile;
+
+    @include sm-and-up {
+        height: $height;
+    }
+
+    .logo {
+
+        @include sm-and-up {
+            height: $height;
+        }
+
+        img {
+            display: block;
+            margin: 30px auto;
+            width: 200px;
+
+
+            @include sm-and-up {
+                display: inline-block;
+                max-width: 300px;
+                width: 300px;                
+            }
+        }
+    }
+
+    .intro {
+        color: lighten($color-red, 50%);
+
+        font-family: $font-headlines;
+        height: $height-mobile;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+
+        @include sm-and-up {
+            font-size: 24px;
+            height: $height;
+        }
+
+        strong {
+            color: $color-white;
+            display: block;
+            font-size: 28px;
+            font-family: $font-serif;
+
+            @include sm-and-up {
+                font-size: 36px;
+            }
+
+            @include lg {
+                font-size: 48px;
+            }
+        }
+    }
+}
+
+
+section.splash-action, section.splash-share {
+    padding: 60px 0;
+
+    @include sm-and-up {
+        padding: 120px 0;
+    }
+}
+
+
+form {
+    label {
+        font-weight: 600;
+    }
+
+    .form-control {
+        border-radius: 0;
+        border-color: lighten( $color-black, 50% );
+        box-shadow: none;
+        font-family: $font-sans;
+        font-size: 16px;
+        font-weight: 600;
+
+        &:active, &:focus {
+            box-shadow: none;
+            border-color: lighten( $color-black, 30% );
+        }
+    }
+}
+
+
+.btn {
+    background-color: #BBBBBB;
+    border: 0;
+    border-radius: 0;
+    color: $color-white;
+    font-size: 15px;
+    line-height: 15px;
+    font-weight: 600;
+    padding: 10px 21px;
+
+    &:hover {
+        background-color: darken(#BBBBBB, 15%);
+        color: $color-white;
+    }
+
+    &:active, &:focus {
+        color: $color-white;
+        outline: none;
+    }
+
+    &.btn-danger {
+        background-color: $color-red;
+
+        &:hover, &:active, &:focus {
+            background-color: lighten($color-red, 15%);
+        }
+    }
+
+    &.btn-twitter {
+        background-color: $color-twitter;
+
+        &:hover, &:active, &:focus {
+            background-color: darken($color-twitter, 15%);
+        }
+    }
+
+    &.btn-facebook {
+        background-color: $color-facebook;
+
+        &:hover, &:active, &:focus {
+            background-color: darken($color-facebook, 15%);
+        }
+    }
+}
+
+
+.contact-congress {
+    position: relative;
+
+    .step-zip, .step-street, .step-results, .step-error {
+        display: none;
+        background-color: $color-white;
+        opacity: 0;
+        transition: .5s ease;
+        width: 100%;
+    }
+
+    %active {
+        display: block;
+        opacity: 1;
+        z-index: 10;
+    }
+
+    .view-zip {
+        .step-zip { @extend %active; }
+    }
+
+    .view-street {
+        .step-street { @extend %active; }
+    }
+
+    .view-results {
+        .step-results { @extend %active; }
+    }
+
+    .view-error {
+        .step-error { @extend %active; }
+    }
+
+    .rep {
+        margin-bottom: 15px;
+
+        .name {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .contact {
+            font-size: .85em;
+        }
+
+        .btn {
+            display: table;
+            margin-bottom: 10px;
+
+            i {
+                top: 3px;
+                position: relative;
+                margin-right: 5px;
+            }
+        }
+    }
+
+    .disclaimer {
+        color: lighten( $color-black, 30% );
+        font-size: 12px;
+        font-style: italic;
+    }
+}
+
+footer {
+    background-color: $color-sand;
+    color: darken($color-sand, 25%);
+    padding: 45px 0;
+
+    @include sm-and-up {
+        padding: 90px 0;
+    }
+
+
+    .block {
+        @include xs {
+            margin-bottom: 30px;
+        }
+    }
+
+    p, li {
+        font-size: 14px;
+    }
+
+    ul, li {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    ul li {
+        line-height: 1.6em;
+    }
+}

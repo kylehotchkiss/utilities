@@ -1,0 +1,69 @@
+$screen-xs: 480px;
+$screen-sm: 768px;
+$screen-md: 992px;
+$screen-lg: 1200px;
+$screen-xs-max: ($screen-sm - 1);
+$screen-sm-max: ($screen-md - 1);
+$screen-md-max: ($screen-lg - 1);
+
+@mixin xs {
+    @media #{screen} and (max-width: #{$screen-xs-max}) {
+        @content;
+    }
+}
+
+@mixin sm {
+    @media #{screen} and (min-width: #{$screen-sm}) and (max-width: #{$screen-sm-max}) {
+        @content;
+    }
+}
+
+@mixin md {
+    @media #{screen} and (min-width: #{$screen-md}) and (max-width: #{$screen-md-max}) {
+        @content;
+    }
+}
+
+@mixin lg {
+    @media #{screen} and (min-width: #{$screen-lg}) {
+        @content;
+    }
+}
+
+// inclusive mixins
+@mixin sm-and-down {
+    @media #{screen} and (max-width: #{$screen-sm-max}) {
+        @content;
+    }
+}
+
+@mixin sm-and-up {
+    @media #{screen} and (min-width: #{$screen-sm}) {
+        @content;
+    }
+}
+
+@mixin md-and-down {
+    @media #{screen} and (max-width: #{$screen-md-max}) {
+        @content;
+    }
+}
+
+@mixin md-and-up {
+    @media #{screen} and (min-width: #{$screen-md}) {
+        @content;
+    }
+}
+
+// specific
+@mixin breakpoint-max($w) {
+    @media #{$screen} and (max-width: $w) {
+        @content;
+    }
+}
+
+@mixin breakpoint-min($w) {
+    @media #{$screen} and  (min-width: $w) {
+        @content;
+    }
+}
