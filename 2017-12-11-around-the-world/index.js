@@ -148,32 +148,13 @@ var generateFlightPaths = function( data, filename ) {
     });
 };
 
-googleDirectionPaths(europeRoadTrips, 'europe-road-trips.geojson')
-    //.then( googleDirectionPaths(americaRoadTrips, 'roadtrips.geojson') )
-    //.then( googleDirectionPaths(americaRailTrips, 'railtrips.geojson') )
-    //.then( googleDirectionPaths(asiaRoadTrips, 'asia-road-trips.geojson') )
-    //.then( googleDirectionPaths(asiaRailTrips, 'asia-rail-trips.geojson') )
-    .then( googleDirectionPaths(delhiRoadtrips, 'delhi-road-trips.geojson') )
-    //.then( googleDirectionPaths(uaeRoadtrips, 'uae-road-trips.geojson') )
-    //.then( generateFlightPaths(flights, 'flights.geojson') )
-    .then(function() {
-        console.log('Done');
-    });
-
-
-//var indiaPast = require('./input/india-past.json');
-//var indiaFlights = require('./input/india-flights.json');
-//var indiaFuture = require('./input/india-future.json');
-
-//generateFlightPaths(flights, 'flights.geojson')
-//    .then(function() {
-//        console.log('Done');
-//    });
-
-/*var caRoadTrip = require('./input/california-road-trip.json');
-
-googleDirectionPaths(caRoadTrip, 'california-road-trip.geojson')
-    .then(function() {
-        console.log('Done');
-    });
-*/
+(async () => {
+    //await googleDirectionPaths(europeRoadTrips, 'europe-road-trips.geojson');
+    //await googleDirectionPaths(americaRoadTrips, 'roadtrips.geojson');
+    //await googleDirectionPaths(americaRailTrips, 'railtrips.geojson');
+    //await googleDirectionPaths(asiaRoadTrips, 'asia-road-trips.geojson');
+    //await googleDirectionPaths(asiaRailTrips, 'asia-rail-trips.geojson');
+    //await googleDirectionPaths(delhiRoadtrips, 'delhi-road-trips.geojson');
+    //await googleDirectionPaths(uaeRoadtrips, 'uae-road-trips.geojson');
+    await generateFlightPaths(flights, 'flights.geojson');
+})(); 
